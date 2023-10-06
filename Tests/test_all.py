@@ -2,7 +2,7 @@ from unittest import TestCase
 from App.v3 import Action, Scenario
 
 
-class ActionTest(TestCase):
+class AllTest(TestCase):
     def setUp(self):
         self.action_1 = Action(name="test name1", price=10.1, rent=25.6)
         self.action_2 = Action(name="test name2", price=64.80, rent=4.3)
