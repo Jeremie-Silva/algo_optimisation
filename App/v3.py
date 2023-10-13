@@ -31,13 +31,18 @@ class Scenario(BaseModel):
     def calculate_budget_remaining(self) -> None:
         self.budget_remaining = round(self.budget - sum([i.price for i in self.actions]), 2)
 
-    def append_action(self, action: Action) -> bool:
-        pass
-        """
-            vérifie si elle peut ajouter une action,
-            si oui, elle l'ajoute puis recalcule le budget et benefice et retourne True
-            si non, elle retourne False
-        """
+    def append_action_if_possible(self, action: Action) -> bool:
+        if action.price <= self.budget_remaining:
+            self.actions.append(action)
+            return True
+        else:
+            return False
+
+    def __str__(self):
+        return f"Total benefits : {self.cumulative_benefits}€ \n" \
+        f"Total coast : {self.budget-self.budget_remaining}€ \n" \
+        f"Number of actions : {len(self.actions)} \n" \
+        f"Actions name : {[i.name for i in self.actions]}"
 
 
 def load_dataset(dataset_path: str) -> list[list[str]]:
@@ -50,36 +55,41 @@ def format_dataset(data: list[list[str]]) -> list[Action]:
     return [Action(name=i[0], price=i[1], rent=i[2]) for i in data]
 
 
+def clean_dataset(dataset: list[Action]) -> list[Action]:
+    return [action for action in dataset if action.benefits > 0]
+
+
 def sort_dataset(dataset: list[Action]) -> None:
     dataset.sort(key=lambda x: -x.benefits)
 
 
-# def create_scenarios(dataset: list[Action]) -> dict[Scenario]:
-#     scenarios = {}
-#     for index, action in enumerate(dataset):
-#         case = Scenario(actions=[action])
-#         case.calculate_budget_remaining()
-#         if case.budget_remaining - dataset[index+1] > 0:
-#         # if case.budget - sum(())
-#     return scenarios
+def create_scenarios(dataset: list[Action], begin: int, end, results={}) -> dict[Scenario]:
+    if begin == end:
+        return results
+    small_dataset = dataset[begin:]
+    new_scenario = Scenario(actions=[])
+    for action in small_dataset:
+        new_scenario.calculate_budget_remaining()
+        new_scenario.append_action_if_possible(action)
+        new_scenario.calculate_budget_remaining()
+        new_scenario.calculate_cumulative_benefits()
+    results[f"Scenario_{begin+1}"] = new_scenario
+    create_scenarios(dataset, begin+1, end, results)
+    return results
 
 
-"""     create scenarios:
-    params -> rang de départ, rang de fin, dataset, resultat
-
-    la fonction se met à la postion du rang dans le dataset
-    elle créer un scénario à partir d'ici,
-    elle ajoute les actions suivantes si le budget le permet
-    une fois finie elle ajoute le scenario dans un dict
-
-    elle s'auto-appelle avec le dict de resultats et le rang de départ+1
-    si le rang de fin est atteint elle arrete et return le dict de resultats
-"""
+def show_results(dict_scenarios: dict) -> None:
+    for key in dict_scenarios.keys():
+        print("-------------------------------------------------------------------------")
+        print(key.replace("_", " ").upper())
+        print(dict_scenarios.get(key))
+        print("-------------------------------------------------------------------------")
 
 
-unprocessed_dataset: list[list[str]] = load_dataset(DATASET_PATH)
-dataset: list[Action] = format_dataset(unprocessed_dataset)
-sort_dataset(dataset)
-# create_scenarios(dataset)
-
-print(dataset)
+if __name__ == "__main__":
+    unprocessed_dataset: list[list[str]] = load_dataset(DATASET_PATH)
+    dataset: list[Action] = format_dataset(unprocessed_dataset)
+    dataset_clean: list[Action] = clean_dataset(dataset)
+    sort_dataset(dataset_clean)
+    results: dict = create_scenarios(dataset_clean, begin=0, end=10)
+    show_results(results)
