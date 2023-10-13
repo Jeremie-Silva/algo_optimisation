@@ -63,7 +63,7 @@ def sort_dataset(dataset: list[Action]) -> None:
     dataset.sort(key=lambda x: -x.benefits)
 
 
-def create_scenarios(dataset: list[Action], begin: int, end, results={}) -> dict[Scenario]:
+def create_scenarios(dataset: list[Action], begin: int, end: int, results={}) -> dict[Scenario]:
     if begin == end:
         return results
     small_dataset = dataset[begin:]
@@ -91,5 +91,5 @@ if __name__ == "__main__":
     dataset: list[Action] = format_dataset(unprocessed_dataset)
     dataset_clean: list[Action] = clean_dataset(dataset)
     sort_dataset(dataset_clean)
-    results: dict = create_scenarios(dataset_clean, begin=0, end=10)
+    results: dict = create_scenarios(dataset_clean, begin=0, end=50)
     show_results(results)
