@@ -56,7 +56,7 @@ def format_dataset(data: list[list[str]]) -> list[Action]:
 
 
 def clean_dataset(dataset: list[Action]) -> list[Action]:
-    return [action for action in dataset if action.benefits > 0]
+    return [action for action in dataset if action.benefits > 0 and action.price > 0]
 
 
 def sort_dataset(dataset: list[Action]) -> None:
