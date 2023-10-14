@@ -91,5 +91,5 @@ if __name__ == "__main__":
     dataset: list[Action] = format_dataset(unprocessed_dataset)
     dataset_clean: list[Action] = clean_dataset(dataset)
     sort_dataset(dataset_clean)
-    results: dict = create_scenarios(dataset_clean, begin=0, end=50)
+    results: dict = create_scenarios(dataset_clean, begin=0, end=10)
     show_results(results)

@@ -1,101 +1,100 @@
-from itertools import combinations
+from typing import List
 
-BUDGET = 500
-DATA = {
-    "Action_1": (20, 5), # 1
-    "Action_2": (30, 10), # 3
-    "Action_3": (50, 15), # 7.5
-    "Action_4": (70, 20), # 14
-    "Action_5": (60, 17), # 10.2
-    "Action_6": (80, 25), # 20
-    "Action_7": (22, 7), # 1.54
-    "Action_8": (26, 11), # 2.86
-    "Action_9": (48, 13), # 6.24
-    "Action_10": (34, 27), # 9.18
-    "Action_11": (42, 17), # 7.14
-    "Action_12": (110, 9), # 9.9
-    "Action_13": (38, 23), # 8.74
-    "Action_14": (14, 1), # 0.14
-    "Action_15": (18, 3), # 0.54
-    "Action_16": (8, 8), # 0.64
-    "Action_17": (4, 12), # 0.48
-    "Action_18": (10, 14), # 1.4
-    "Action_19": (24, 21), # 5.04
-    "Action_20": (114, 18), # 20.52
-}
+from pydantic import BaseModel, model_validator
+import csv
 
 
-def calculate_max_operations_for_budget(budget: int, prices_list: list[int]):
-    prices_list.sort()
-    sum = 0
-    count = 0
-    for price in prices_list:
-        if sum + price <= budget:
-            sum += price
-            count += 1
+BUDGET: float = 500
+DATASET_PATH: str = "../Data/dataset_1.csv"
+
+
+class Action(BaseModel):
+    name: str
+    price: float
+    rent: float
+    benefits: float = None
+
+    @model_validator(mode='after')
+    def calculate_benefits(self) -> None:
+        self.benefits = round(self.price*(self.rent/100), 2)
+
+
+class Scenario(BaseModel):
+    budget: int = BUDGET
+    actions: list
+    cumulative_benefits: float = None
+    budget_remaining: float = None
+
+    def calculate_cumulative_benefits(self) -> None:
+        self.cumulative_benefits = round(sum([i.benefits for i in self.actions]), 2)
+
+    def calculate_budget_remaining(self) -> None:
+        self.budget_remaining = round(self.budget - sum([i.price for i in self.actions]), 2)
+
+    def append_action_if_possible(self, action: Action) -> bool:
+        if action.price <= self.budget_remaining:
+            self.actions.append(action)
+            return True
         else:
-            break
-    print(count)
-    return count
+            return False
 
-def sum_within_threshold(numbers, threshold):
-    total = 0
-    for num in numbers:
-        if total + num <= threshold:
-            total += num
-        else:
-            break
-    return total
-
-def calculate_best_scenario(scenarios_list, DATA):
-    best_scenario = []
-    max_benefits = 0
-    for scenario in scenarios_list:
-        benefits = 0
-        for action in scenario:
-            assert scenario.count(action) == 1
-            benefits += (DATA.get(action)[0] * DATA.get(action)[1] / 100)
-        if benefits > max_benefits:
-            max_benefits = benefits
-            best_scenario = scenario
-    return best_scenario, max_benefits
+    def __str__(self):
+        return f"Total benefits : {self.cumulative_benefits}€ \n" \
+        f"Total coast : {self.budget-self.budget_remaining}€ \n" \
+        f"Number of actions : {len(self.actions)} \n" \
+        f"Actions name : {[i.name for i in self.actions]}"
 
 
-prices_list = [action[0] for action in DATA.values()]
-max_operations = calculate_max_operations_for_budget(BUDGET, prices_list)
-scenarios_list = list(combinations(DATA.keys(), max_operations))
-best_scenario, max_benefits = calculate_best_scenario(scenarios_list, DATA)
+def load_dataset(dataset_path: str) -> list[list[str]]:
+    with open(dataset_path, "r") as file:
+        unprocessed_dataset = [i for i in csv.reader(file)][1:]
+    return unprocessed_dataset[1:]
 
 
-print(
-    f"Voici le meilleur scénarios : {best_scenario}\n"
-    f"Il faudrat compter : {sum([DATA.get(action)[0] for action in best_scenario])}€\n"
-    f"Pour un revenue de {max_benefits}"
-)
+def format_dataset(data: list[list[str]]) -> list[Action]:
+    return [Action(name=i[0], price=i[1], rent=i[2]) for i in data]
 
 
+def clean_dataset(dataset: list[Action]) -> list[Action]:
+    return [action for action in dataset if action.benefits > 0 and action.price > 0]
 
 
+def sort_results(results: dict) -> dict:
+    sorted_results = {
+        key: value for key, value in sorted(
+            results.items(), key=lambda item: item[1].cumulative_benefits, reverse=True
+        )
+    }
+    return sorted_results
 
 
+def create_scenarios(dataset: list[Action], begin: int, end: int, results={}) -> dict[Scenario]:
+    if begin == end:
+        return results
+    small_dataset = dataset[begin:]
+    new_scenario = Scenario(actions=[])
+    for action in small_dataset:
+        new_scenario.calculate_budget_remaining()
+        new_scenario.append_action_if_possible(action)
+        new_scenario.calculate_budget_remaining()
+        new_scenario.calculate_cumulative_benefits()
+    results[f"Scenario_{begin+1}"] = new_scenario
+    create_scenarios(dataset, begin+1, end, results)
+    return results
 
 
-"""
-    Orienté object ?
-    Faire une fonction file_opener et mettre DATA dans un fichier
-    Des boucles dans des boucles, il calcul le cumul à chaque coup et ajoute l'achat si le budget le permet.
-    Utiliser les index dans les boucles pour incrémenter les tours de circuit.
-    Creer une liste de scénarios à incrémenter à chaque tour.
-    Creer une autre fonction qui parcours cette liste, fait le calcul, le garde si il est meilleur
-    generate_valid_scenario ? POO ?
+def show_results(dict_scenarios: dict) -> None:
+    for key in dict_scenarios.keys():
+        print("-------------------------------------------------------------------------")
+        print(key.replace("_", " ").upper())
+        print(dict_scenarios.get(key))
+        print("-------------------------------------------------------------------------")
 
-    Calculer le nbr max de possibilités avec une méthode --> OK
-    Générer liste de scénarios avec combinations() + le nbr max --> OK
-    Itérer dans la liste en déclachant une fonction qui retourne le résultat
-    pour chaque scénario --> Ok
-    Mettre à jour le resultat final si le scénario est meilleur + print -> OK
-    ----------TU----------
-    >>> améliorations : asynchrone avec plusieurs tasks à la fois
-    >>> améliorations : dabord organiser les données en fonction du meilleur
-                        ratio prix/rendement
-"""
+
+if __name__ == "__main__":
+    unprocessed_dataset: list[list[str]] = load_dataset(DATASET_PATH)
+    dataset: list[Action] = format_dataset(unprocessed_dataset)
+    dataset_clean: list[Action] = clean_dataset(dataset)
+    results: dict = create_scenarios(dataset_clean, begin=0, end=950)
+    sorted_results: dict = sort_results(results)
+    show_results(sorted_results)

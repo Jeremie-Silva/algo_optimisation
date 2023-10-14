@@ -1,5 +1,5 @@
 from unittest import TestCase
-from App.v3 import Action, Scenario
+from App.optimized import Action, Scenario
 
 
 class AllTests(TestCase):
