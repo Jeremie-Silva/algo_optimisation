@@ -1,11 +1,15 @@
-from typing import List
-
-from pydantic import BaseModel, model_validator
 import csv
+import argparse
+from pydantic import BaseModel, model_validator
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("dataset_path", type=str, help="Type the path to your csv dataset")
+args = parser.parse_args()
 
 
 BUDGET: float = 500
-DATASET_PATH: str = "../Data/dataset_1.csv"
+DATASET_PATH: str = args.dataset_path
 
 
 class Action(BaseModel):
