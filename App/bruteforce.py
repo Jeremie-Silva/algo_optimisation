@@ -98,7 +98,7 @@ def sort_results(results: dict) -> dict:
     """
     sorted_results = {
         key: value for key, value in sorted(
-            results.items(), key=lambda item: item[1].cumulative_benefits, reverse=True
+            results.items(), key=lambda item: -item[1].cumulative_benefits, reverse=True
         )
     }
     return sorted_results

@@ -126,7 +126,7 @@ def show_results(dict_scenarios: dict) -> None:
 
     :param dict_scenarios: Dictionary of Scenario objects.
     """
-    for key in dict_scenarios.keys():
+    for key in reversed(dict_scenarios.keys()):
         print("-------------------------------------------------------------------------")
         print(key.replace("_", " ").upper())
         print(dict_scenarios.get(key))
