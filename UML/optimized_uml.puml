@@ -1,0 +1,15 @@
+@startuml
+title Optimized script : UML
+
+left to right direction
+file Dataset as dataset
+rectangle Actions as action_1
+rectangle Actions as action_2
+rectangle Actions as action_3
+rectangle Scenarios as scenario
+
+dataset ---> action_1 : "import and initialization"
+action_1 ---> action_2 : "remove nonsense data"
+action_2 ---> action_3 #text:green : "sort Actions by calculate benefits"
+action_3 ---> scenario #text:blue : "create bests scenarios"
+@enduml

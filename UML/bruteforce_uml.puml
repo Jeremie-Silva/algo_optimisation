@@ -1,0 +1,15 @@
+@startuml
+title Bruteforce script : UML
+
+left to right direction
+file Dataset as dataset
+rectangle Actions as action_1
+rectangle Actions as action_2
+rectangle Scenarios as scenario_1
+rectangle Scenarios as scenario_2
+
+dataset ---> action_1 : "import and initialization"
+action_1 ---> action_2 : "remove nonsense data"
+action_2 ---> scenario_1 #text:red : "create all scenarios"
+scenario_1 ---> scenario_2 : "sort Scenarios by calculate benefits"
+@enduml
