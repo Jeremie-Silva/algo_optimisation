@@ -23,6 +23,7 @@ class Action(BaseModel):
         """Calculate the benefits of the action after the model is initialized.
         Benefits are calculated by multiplying the price and rent percentage,
         and assigning the result to the benefits attribute.
+        Complexity: O(1)
         """
         self.benefits = round(self.price * (self.rent / 100), 2)
 
@@ -35,13 +36,13 @@ class Scenario(BaseModel):
 
     def calculate_cumulative_benefits(self) -> None:
         """Calculates the cumulative benefits of all actions in the scenario.
-        Complexity: O(1)
+        Complexity: O(BUDGET)
         """
         self.cumulative_benefits = round(sum([i.benefits for i in self.actions]), 2)
 
     def calculate_budget_remaining(self) -> None:
         """Calculates the remaining budget based on the actions in the scenario.
-        Complexity: O(1)
+        Complexity: O(BUDGET)
         """
         self.budget_remaining = round(self.budget - sum([i.price for i in self.actions]), 2)
 
