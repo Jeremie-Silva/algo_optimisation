@@ -1,15 +1,19 @@
 from unittest import TestCase
-from App.optimized import Action, Scenario
+from unittest.mock import patch
 
 
 class AllTests(TestCase):
-    def setUp(self):
-        self.action_1 = Action(name="test 1", price=10.1, rent=25.6)
-        self.action_2 = Action(name="test 2", price=64.80, rent=4.3)
-        self.action_3 = Action(name="test 3", price=23.4, rent=12.58)
-        self.action_low_coast = Action(name="test 4", price=0.4, rent=2.34)
+    @patch('argparse.ArgumentParser.parse_args')
+    def setUp(self, mock_argparse):
+        from App.optimized import Action, Scenario
+        self.class_action = Action
+        self.class_scenario = Scenario
+        self.action_1 = self.class_action(name="test 1", price=10.1, rent=25.6)
+        self.action_2 = self.class_action(name="test 2", price=64.80, rent=4.3)
+        self.action_3 = self.class_action(name="test 3", price=23.4, rent=12.58)
+        self.action_low_coast = self.class_action(name="test 4", price=0.4, rent=2.34)
 
-        self.scenario_1 = Scenario(
+        self.scenario_1 = self.class_scenario(
             budget=500,
             actions=[self.action_1, self.action_2, self.action_3]
         )
@@ -17,9 +21,9 @@ class AllTests(TestCase):
     # Action()
 
     def test_action_model(self):
-        self.assertIsInstance(self.action_1, Action)
-        self.assertIsInstance(self.action_2, Action)
-        self.assertIsInstance(self.action_3, Action)
+        self.assertIsInstance(self.action_1, self.class_action)
+        self.assertIsInstance(self.action_2, self.class_action)
+        self.assertIsInstance(self.action_3, self.class_action)
 
     # Action.calculate_benefits()
 
@@ -31,7 +35,7 @@ class AllTests(TestCase):
     # Scenario()
 
     def test_scenario_model(self):
-        self.assertIsInstance(self.scenario_1, Scenario)
+        self.assertIsInstance(self.scenario_1, self.class_scenario)
 
     # Scenario.calculate_cumulative_benefits()
 
