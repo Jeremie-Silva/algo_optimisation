@@ -31,8 +31,8 @@ class Action(BaseModel):
 class Scenario(BaseModel):
     budget: int = BUDGET
     actions: list
-    cumulative_benefits: float = None
-    budget_remaining: float = None
+    cumulative_benefits: float = 0.0
+    budget_remaining: float = 0.0
 
     def calculate_cumulative_benefits(self) -> None:
         """Calculates the cumulative benefits of all actions in the scenario.
