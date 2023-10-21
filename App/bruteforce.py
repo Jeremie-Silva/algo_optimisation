@@ -1,3 +1,7 @@
+# ----------------------------------------------------------------------------------------
+# https://github.com/Jeremie-Silva/algo_optimisation/blob/main/README.md
+# ----------------------------------------------------------------------------------------
+
 import csv
 import argparse
 from pydantic import BaseModel, model_validator
