@@ -4,6 +4,8 @@
 
 import csv
 import argparse
+import time
+from itertools import combinations
 from pydantic import BaseModel, model_validator
 
 
@@ -59,7 +61,7 @@ class Scenario(BaseModel):
         Returns:
             True if action was added, False otherwise.
         """
-        if action.price <= self.budget_remaining:
+        if action.price <= self.budget_remaining and action not in self.actions:
             self.actions.append(action)
             return True
         else:
@@ -82,7 +84,7 @@ def load_dataset(dataset_path: str) -> list[list[str]]:
         List of lists containing the dataset.
     """
     with open(dataset_path, "r") as file:
-        unprocessed_dataset = [i for i in csv.reader(file)][1:]
+        unprocessed_dataset = [i for i in csv.reader(file)]
     return unprocessed_dataset[1:]
 
 
@@ -111,67 +113,50 @@ def clean_dataset(dataset: list[Action]) -> list[Action]:
     return [action for action in dataset if action.benefits > 0 and action.price > 0]
 
 
-def sort_results(results: dict) -> dict:
-    """Sorts a dictionary of Scenario objects by cumulative benefits in descending order.
-    Complexity: O(n log n)
-
-    Params:
-        results: Dictionary of Scenario objects.
-    Returns:
-        Sorted dictionary by cumulative benefits.
-    """
-    sorted_results = {
-        key: value for key, value in sorted(
-            results.items(), key=lambda item: -item[1].cumulative_benefits, reverse=True
-        )
-    }
-    return sorted_results
-
-
-def create_scenarios(dataset: list[Action], begin: int, end: int, results={}) -> dict[Scenario]:
-    """Creates scenarios by adding actions from the dataset and stores them in a dictionary.
-    Complexity: O(n) * O(end)
+def calculates_best_scenario(dataset: list[Action]) -> Scenario:
+    """Generates lists of combinations of different lengths,
+    creates scenarios with these lists, returns the best scenario.
+    Complexity: O(n^2 * 2^n)
 
     Params:
         dataset: List of Action objects.
-        begin: Starting index for creating scenarios.
-        end: Ending index for creating scenarios.
-        results: Dictionary to store the created scenarios.
     Returns:
-        Dictionary of Scenario objects.
+        Scenario object.
     """
-    if begin == end:
-        return results
-    small_dataset = dataset[begin:]
-    new_scenario = Scenario(actions=[])
-    for action in small_dataset:
-        new_scenario.calculate_budget_remaining()
-        new_scenario.append_action_if_possible(action)
-        new_scenario.calculate_budget_remaining()
-        new_scenario.calculate_cumulative_benefits()
-    results[f"Scenario_{begin + 1}"] = new_scenario
-    create_scenarios(dataset, begin + 1, end, results)
-    return results
+    best_scenario = Scenario(actions=[])
+    for i in range(len(dataset)):
+        combinations_increasing_length: list = list(combinations(dataset, i+1))
+
+        for combination in combinations_increasing_length:
+            new_scenario = Scenario(actions=[])
+            for action in combination:
+                new_scenario.append_action_if_possible(action)
+                new_scenario.calculate_budget_remaining()
+
+            new_scenario.calculate_cumulative_benefits()
+            if new_scenario.cumulative_benefits > best_scenario.cumulative_benefits:
+                best_scenario = new_scenario
+    return best_scenario
 
 
-def show_results(dict_scenarios: dict) -> None:
-    """Displays the results of the scenarios from a dictionary.
-    Complexity: O(n)
+def show_result(result: Scenario) -> None:
+    """Displays the best result.
+    Complexity: O(1)
 
     Params:
-        dict_scenarios: Dictionary of Scenario objects.
+        result: Scenario object.
     """
-    for key in dict_scenarios.keys():
-        print("-------------------------------------------------------------------------")
-        print(key.replace("_", " ").upper())
-        print(dict_scenarios.get(key))
-        print("-------------------------------------------------------------------------")
+    print("-------------------------------------------------------------------------")
+    print(result)
+    print("-------------------------------------------------------------------------")
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     unprocessed_dataset: list[list[str]] = load_dataset(DATASET_PATH)  # O(n)
     dataset: list[Action] = format_dataset(unprocessed_dataset)  # O(n)
     dataset_clean: list[Action] = clean_dataset(dataset)  # O(n)
-    results: dict = create_scenarios(dataset_clean, begin=0, end=950)  # O(950n)
-    sorted_results: dict = sort_results(results)  # O(n log n)
-    show_results(sorted_results)  # O(n)
+    result: Scenario = calculates_best_scenario(dataset_clean)  # O(n^2 * 2^n)
+    show_result(result)  # O(1)
+    end_time = time.time()
+    print(f"Execution time: {end_time-start_time:.2f} seconds")

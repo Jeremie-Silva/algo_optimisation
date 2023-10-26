@@ -5,6 +5,7 @@
 import csv
 import argparse
 from pydantic import BaseModel, model_validator
+import time
 
 
 parser = argparse.ArgumentParser()
@@ -82,7 +83,7 @@ def load_dataset(dataset_path: str) -> list[list[str]]:
         List of lists containing the dataset.
     """
     with open(dataset_path, "r") as file:
-        unprocessed_dataset = [i for i in csv.reader(file)][1:]
+        unprocessed_dataset: list = [i for i in csv.reader(file)]
     return unprocessed_dataset[1:]
 
 
@@ -162,9 +163,12 @@ def show_results(dict_scenarios: dict) -> None:
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     unprocessed_dataset: list[list[str]] = load_dataset(DATASET_PATH)  # O(n)
     dataset: list[Action] = format_dataset(unprocessed_dataset)  # O(n)
     dataset_clean: list[Action] = clean_dataset(dataset)  # O(n)
     sort_dataset(dataset_clean)  # O(n log n)
     results: dict = create_scenarios(dataset_clean, begin=0, end=10)  # O(10n)
     show_results(results)  # O(n)
+    end_time = time.time()
+    print(f"Execution time: {end_time-start_time:.2f} seconds")
