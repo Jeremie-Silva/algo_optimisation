@@ -168,7 +168,7 @@ if __name__ == "__main__":
     dataset: list[Action] = format_dataset(unprocessed_dataset)  # O(n)
     dataset_clean: list[Action] = clean_dataset(dataset)  # O(n)
     sort_dataset(dataset_clean)  # O(n log n)
-    results: dict = create_scenarios(dataset_clean, begin=0, end=10)  # O(10n)
+    results: dict = create_scenarios(dataset_clean, begin=0, end=950)  # O(end*n)
     show_results(results)  # O(n)
     end_time = time.time()
     print(f"Execution time: {end_time-start_time:.2f} seconds")
