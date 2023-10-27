@@ -156,10 +156,11 @@ def show_results(dict_scenarios: dict) -> None:
         dict_scenarios: Dictionary of Scenario objects.
     """
     for key in reversed(dict_scenarios.keys()):
-        print("-------------------------------------------------------------------------")
-        print(key.replace("_", " ").upper())
-        print(dict_scenarios.get(key))
-        print("-------------------------------------------------------------------------")
+        if len(dict_scenarios.get(key).actions) != 0:
+            print("-------------------------------------------------------------------------")
+            print(key.replace("_", " ").upper())
+            print(dict_scenarios.get(key))
+            print("-------------------------------------------------------------------------")
 
 
 if __name__ == "__main__":
@@ -168,7 +169,7 @@ if __name__ == "__main__":
     dataset: list[Action] = format_dataset(unprocessed_dataset)  # O(n)
     dataset_clean: list[Action] = clean_dataset(dataset)  # O(n)
     sort_dataset(dataset_clean)  # O(n log n)
-    results: dict = create_scenarios(dataset_clean, begin=0, end=950)  # O(end*n)
+    results: dict = create_scenarios(dataset_clean, begin=0, end=500)  # O(end*n)
     show_results(results)  # O(n)
     end_time = time.time()
     print(f"Execution time: {end_time-start_time:.2f} seconds")

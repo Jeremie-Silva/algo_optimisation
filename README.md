@@ -20,6 +20,7 @@ pip install -r requirements.txt
 <br/>
 
 ### Lancer le script de bruteforce
+Le script de bruteforce fonctionne uniquement sur des dataset de 20 lignes maximum
 ```bash
 python App/bruteforce.py [dataset_path]
 ```
